@@ -1,0 +1,88 @@
+//This sketch uses an analog sensor - a Potentiometer - to control power to the ships engine.
+//As you raise too much power a warning light flashes.
+//Even more power and you get an additional warning from the ships HUD
+//Too much power and the engine finaly dies.
+//A servo represents the motor control sending power via the potentiometer (the "trottle"
+
+
+#include <Servo.h> // add the servo library
+Servo motorControl; // create servo object/variable to control the ships motor
+
+int potSensor = A0; // xxxxx
+int potValue = 0; // xxxxx
+
+int EngWarning = 130; // xxxxx
+int EngLimit = 150; // xxxxx
+int EngDone = 170; // xxxxx
+int resetValue = 0; // xxxxx
+
+int warningLED = 7; 
+
+boolean shipWorking = true; // set a boolean(true/false) that the ship works to "true"
+
+
+void setup() {
+
+  Serial.begin(9600); // xxxxx
+  pinMode(warningLED, OUTPUT); // xxxxx
+  motorControl.attach(9); // xxxxx
+  motorControl.write(0);// xxxxx
+
+}
+
+void loop() {
+
+  potValue = analogRead(potSensor); // xxxxx
+
+  // check to see if the shipWorking boolean is true
+  // if the ship is working, then map the potentiometer value to the servo
+  if (shipWorking) {
+    potValue = map(potValue, 0, 1024, 0, 180); 
+    motorControl.write(potValue); // set servo position to potentiometer position
+    delay(15); // send quick delay to servo
+  } else { // else if the ship is not working
+    motorControl.write(0); // send the servo back to zero
+  }
+
+
+  // now if you want to reset everything by turning the potentiometer back to zero
+  // check to see if the value of the potnetiometer is back at zero or
+  // all the way counter clockwise and whatever value that is if it is not zero
+  if (potValue <= resetValue) {
+    shipWorking = true; // set the ship working to true and the servo will start to map to the dial again
+  }
+
+
+  if (potValue < EngDone) { // xxxxx
+    Serial.println(potValue); // xxxxx
+  }
+
+  if ((potValue > EngWarning) && (potValue < EngDone)) { // xxxxx
+    digitalWrite(warningLED, HIGH); // xxxxx
+    delay(60); // xxxxx
+    digitalWrite(warningLED, LOW); // xxxxx
+    delay(60);// xxxxx
+  }
+  else {
+    digitalWrite(warningLED, LOW); // xxxxx
+  }
+
+  if ((potValue > EngLimit) && (potValue < EngDone)) { // xxxxx
+    Serial.println("Too much Captain, the engines canna take it!"); // print text if above engine limit
+  }
+
+  if (potValue >= EngDone) {
+    digitalWrite(warningLED, LOW); // Warning light off as engine is done.
+  }
+
+  if (potValue >= EngDone) {
+    Serial.println("You're Done. Thanks for ruining my ship"); // print snarky text as engine is destroyed
+  }
+
+  // if the potentiometer ruins the ship 
+  // set the boolean shipWorking to false
+  if(potValue >= EngDone){
+    shipWorking = false; 
+  }
+
+}
