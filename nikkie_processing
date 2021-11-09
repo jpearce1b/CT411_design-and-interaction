@@ -1,0 +1,280 @@
+
+
+/*
+  this processing sketch listens for serial data when an microcontroller
+ is connected through a usb to the computer
+ 
+ upload the arduino sketch called
+ four_button_audio_processing
+ to the arduino uno or adafruit metro 0
+ 
+ there are four buttons connected to the microcontroller
+ when a button is pressed, serial data is sent through 
+ the usb telling processing which audio file to play
+ 
+ you will have to add the audio files to the sketch by dragging
+ and dropping directly onto this sketch window
+ once you have dropped them, you will be able to see them in a 
+ folder called "data"
+ you can access this folder by hovering over the Sketch menu item above
+ and in the dropdown menu select Show Sketch Folder
+ or you can press command-K
+ 
+ */
+
+// we have to import two libraries 
+
+// if you do not have the sound library included in your libraries, 
+// you will get an error when trying to intialize the SoundFile variables
+
+// one for sound that you may need to add by clicking the Sketch menu above
+// in the dropdown select Import Library and 
+// then in that dropdown select Add Library...
+// that will open up a window wher you can type "sound" into the search bar
+// at the top of the window indicated by the magnifying glass symbol
+
+// the search results should include one library called 
+// "Sound" by the processing foundation. click on it and then click "install"
+// once you have selected the library
+
+// you probably already have the serial library but if not you can follow the same
+// steps to import it
+
+
+import processing.sound.*; 
+import processing.serial.*;
+
+// this is where we set up the variables for listening for data
+int lf = 10;    // Linefeed in ASCII
+String myString = null; // create an empty string
+Serial myPort;  // The serial port
+int value = 0; // create the serial data value variable and make it zero 
+
+// intialize the SoundFile variables that will hold the audio files
+// we will assign the files to these variables and use them to play
+// the files
+SoundFile audio_one, audio_two, audio_three, audio_four, audio_five, audio_six;
+
+
+// setup runs once and where set the size of any visual display,
+// listen for connected serial devices,
+// load out audio files into our variables
+void setup() {
+
+  // change these numbers in size to get a bigger or smaller display
+  size(720, 540);
+  // or comment the above out and uncomment below to get fullscreen
+  // fullScreen();
+
+  // if you are unsure which port you are using for the usb 
+  // un-comment this line to check which usb port you are using
+// printArray(Serial.list());  
+
+  // below we are just initilaizing the serial port
+  // making sure there is something connected
+  // if not you will get an error
+  // Open the port you are using at the rate you want:
+  myPort = new Serial(this, Serial.list()[2], 9600);
+  myPort.clear(); // clearing up any noise in the connection
+
+  // Throw out the first reading, in case we started reading 
+  // in the middle of a string from the sender.
+  myString = myPort.readStringUntil(lf);
+  myString = null;
+
+  // here we will load the audio files into the variables
+  // the file name in quotes must be EXACTLY the same 
+  // as the file in the "data" folder including the file extension
+  audio_one = new SoundFile(this, "button1.aif");
+  audio_two = new SoundFile(this, "button2.aif");
+  audio_three = new SoundFile(this, "button3.aif");
+  audio_four = new SoundFile(this, "groove.mp3");
+  audio_five = new SoundFile(this, "2.aif");
+  audio_six = new SoundFile(this, "cybotron.mp3");
+
+  // setting up the text display to know which audio file is playing
+  textAlign(CENTER);
+  textSize(100);
+}
+
+
+
+void draw() {
+
+  // this section is basically just making sure the serial port 
+  // is open and sending data
+  while (myPort.available() > 0) {
+    myString = myPort.readStringUntil(lf);
+    if (myString != null) {
+      value = int(trim(myString)); // we store the incoming data in value
+      println(value); // print the stored data in the console below
+
+
+      // then we compare the value to find out which track to play
+
+      // if incoming value is 1
+      if (value == 1) {
+        background(0);
+        fill(255);
+        stroke(255);
+        text("Track One", width/2, height/2); // putting track number on the display
+
+        // stop all other tracks
+        if (audio_two.isPlaying()) {
+          audio_two.stop();
+        }
+        if (audio_three.isPlaying()) {
+          audio_three.stop();
+        }
+        if (audio_four.isPlaying()) {
+          audio_four.stop();
+        }
+        if (audio_five.isPlaying()) {
+          audio_five.stop();
+        }
+        if (audio_six.isPlaying()) {
+          audio_six.stop();
+        }
+
+
+        audio_one.play(); // play track one
+      }
+
+      // if incoming value is 2
+      if (value == 2) {
+        background(0);
+        fill(255);
+        stroke(255);
+        text("Track Two", width/2, height/2); // putting track number on the display
+
+        // stop all other tracks
+        if (audio_one.isPlaying()) {
+          audio_one.stop();
+        }
+        if (audio_three.isPlaying()) {
+          audio_three.stop();
+        }
+        if (audio_four.isPlaying()) {
+          audio_four.stop();
+        }
+        if (audio_five.isPlaying()) {
+          audio_five.stop();
+        }
+         if (audio_six.isPlaying()) {
+          audio_six.stop();
+        }
+
+        audio_two.play(); // play track two
+      } 
+
+      // if incoming value is 3
+      if (value == 3) {
+        background(0);
+        fill(255);
+        stroke(255);
+        text("Track Three", width/2, height/2); // putting track number on the display
+
+        // stop all other tracks
+        if (audio_one.isPlaying()) {
+          audio_one.stop();
+        }
+        if (audio_two.isPlaying()) {
+          audio_two.stop();
+        }
+        if (audio_four.isPlaying()) {
+          audio_four.stop();
+        }
+        if (audio_five.isPlaying()) {
+          audio_five.stop();
+        }
+         if (audio_six.isPlaying()) {
+          audio_six.stop();
+        }
+
+        audio_three.play(); // play track three
+      }
+
+      // if incoming value is 4
+      if (value == 4) {
+        background(0);
+        fill(255);
+        stroke(255);
+        text("Track Four", width/2, height/2); // putting track number on the display
+
+        // stop all other tracks
+        if (audio_one.isPlaying()) {
+          audio_one.stop();
+        }
+        if (audio_two.isPlaying()) {
+          audio_two.stop();
+        }
+        if (audio_three.isPlaying()) {
+          audio_three.stop();
+        }
+        if (audio_five.isPlaying()) {
+          audio_five.stop();
+        }
+         if (audio_six.isPlaying()) {
+          audio_six.stop();
+        }
+
+        audio_four.play(); // play track four
+        
+      }
+        
+          // if incoming value is 5
+      if (value == 5) {
+        background(0);
+        fill(255);
+        stroke(255);
+        text("Track Five", width/2, height/2); // putting track number on the display
+
+        // stop all other tracks
+        if (audio_one.isPlaying()) {
+          audio_one.stop();
+        }
+        if (audio_two.isPlaying()) {
+          audio_two.stop();
+        }
+        if (audio_three.isPlaying()) {
+          audio_three.stop();
+        }
+        if (audio_four.isPlaying())  {
+          audio_four.stop();
+        }
+         if (audio_six.isPlaying()) {
+          audio_six.stop();
+        }
+
+        audio_five.play(); // play track five
+      }
+        
+       // if incoming value is 6
+      if (value == 6) {
+        background(0);
+        fill(255);
+        stroke(255);
+        text("Track Six", width/2, height/2); // putting track number on the display
+
+        // stop all other tracks
+        if (audio_one.isPlaying()) {
+          audio_one.stop();
+        }
+        if (audio_two.isPlaying()) {
+          audio_two.stop();
+        }
+        if (audio_three.isPlaying()) {
+          audio_three.stop();
+        }
+        if (audio_four.isPlaying())  {
+          audio_four.stop();
+        }
+         if (audio_five.isPlaying()) {
+          audio_five.stop();
+        }
+        audio_six.play(); // play track five
+      }
+
+    }
+  }
+}
