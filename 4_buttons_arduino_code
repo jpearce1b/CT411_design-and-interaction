@@ -1,0 +1,67 @@
+int button1 = 2; //push button1 attached to digital pin 2
+int button2 = 3; //push button2 attached to digital pin 3
+
+int button3 = 4; //push button3 attached to digital pin 4
+int button4 = 5;
+
+
+int buttonState1 = LOW; //this variable tracks the state of button1, low if not pressed, high if pressed
+int buttonState2 = LOW; //this variable tracks the state of the button2, low if not pressed, high if pressed
+
+int buttonState3 = LOW; //this variable tracks the state of the button3, low if not pressed, high if pressed
+int buttonState4 = LOW; 
+
+
+
+void setup() {
+
+  //set the mode of the pins...
+  pinMode(button1, INPUT);  // Set digital pin 2 (variable button1) to be an Input
+  pinMode(button2, INPUT);  // Set digital pin 2 (variable button1) to be an Input
+
+  pinMode(button3, INPUT);  // Set digital pin 2 (variable button1) to be an Input
+  pinMode(button4, INPUT);
+
+  Serial.begin(9600); 
+//set up the serial monitor
+
+}
+
+
+void loop() {
+
+  //set buttonState variables to read value (high = pressed, low = not pressed) for each button
+  buttonState1 = digitalRead(button1);
+  buttonState2 = digitalRead(button2);
+  
+  buttonState3 = digitalRead(button3);
+  buttonState4 = digitalRead(button4);
+
+// Send text ("1") to serial monitor when button1 is pressed
+    if  (buttonState1 == HIGH) {
+      Serial.println("1");
+      delay(1200);    
+    }
+
+
+// Send text ("2") to serial monitor when button2 is pressed
+  if (buttonState2 == HIGH) {
+   Serial.println("2");
+     delay(1200);   
+ }
+
+// Send text ("3") to serial monitor when button4 is pressed
+  if (buttonState3 == HIGH) {
+   Serial.println("3");
+     delay(1200);   
+     
+  }
+
+ // Send text ("4") to serial monitor when button4 is pressed
+  if (buttonState4 == HIGH) {
+   Serial.println("4");
+     delay(1200);   
+     
+ }
+
+}
