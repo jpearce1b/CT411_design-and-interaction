@@ -1,0 +1,33 @@
+// This sketch allows Motion Sensor (PIR) to start continuous servo motor
+
+#include <Servo.h>
+
+Servo myservo;  // create servo object to control a servo
+
+
+int pos = 0;    // variable to store the servo position
+int PIR = 2;    // the pin that the Motion Detector sensor is atteched to
+
+void setup() {
+
+  pinMode(PIR, INPUT);    // initialize Motion Detector sensor as an input
+  Serial.begin(9600);     // initialize serial interface
+}
+
+void loop() {
+
+ if (digitalRead(PIR) == HIGH) { // check if the sensor is HIGH i.e motion is detected
+     myservo.attach(9); // attach the servo on Pin 9
+    myservo.write(80);      // spin the servo slowly 
+    Serial.println("Motion detected!"); 
+    delay(2500);                   // delay 2.5 seconds
+  } 
+  else {
+   
+    Serial.println("Motion stopped!");
+    myservo.detach();             // stop motor
+    delay(100);                   // delay 100 milliseconds
+  }
+   
+    
+    }
