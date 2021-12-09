@@ -1,0 +1,66 @@
+// This sketch includes all the code to trigger MP3 Audio w Distance Sensor
+// Line 50 currently set to 10cm (to trigger MP3 Player). Change your desired distance here
+
+
+#include "SoftwareSerial.h"
+#include "DFRobotDFPlayerMini.h"
+
+#define trigPin 13 // defines Distance sensor's Trigger Pin to Digital Pin 13 
+#define echoPin 12 // defines Distance sensor's Echo Pin to Digital Pin 12
+
+
+// Use pins 2 and 3 to communicate with DFPlayer Mini
+static const uint8_t PIN_MP3_TX = 2; // Connects to module's RX 
+static const uint8_t PIN_MP3_RX = 3; // Connects to module's TX 
+SoftwareSerial softwareSerial(PIN_MP3_RX, PIN_MP3_TX);
+
+// Create the MP3 Player object called "player"
+DFRobotDFPlayerMini player;
+
+void setup() {
+
+  pinMode(trigPin, OUTPUT);
+pinMode(echoPin, INPUT);
+// pinMode(led, OUTPUT);
+
+  // Init USB serial port for debugging
+  Serial.begin(9600);
+  // Init serial port for DFPlayer Mini
+  softwareSerial.begin(9600);
+
+  // Start communication with DFPlayer Mini
+  if (player.begin(softwareSerial)) {
+   Serial.println("OK");
+  } else {
+    Serial.println("Connecting to DFPlayer Mini failed!");
+  }
+}
+
+void loop() 
+
+{long duration, distance;
+digitalWrite(trigPin, LOW);
+delayMicroseconds(2);
+digitalWrite(trigPin, HIGH);
+delayMicroseconds(10);
+
+digitalWrite(trigPin, LOW);
+duration = pulseIn(echoPin, HIGH);
+distance = (duration/2) / 29.1; // this math is so distance sensor reads in cm
+
+if (distance < 10)
+{ 
+player.volume(20);
+player.play(1);
+delay(8000); // this waits 8 seconds before being able to trigger MP3 again
+
+}
+
+Serial.print(distance);
+
+Serial.println(" cm");
+
+delay(500);
+
+}
+  
