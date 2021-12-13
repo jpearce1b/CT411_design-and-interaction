@@ -1,0 +1,50 @@
+
+
+#define trigPin 13 // defines Distance sensor's Trigger Pin to Digital Pin 13 
+#define echoPin 12 // defines Distance sensor's Echo Pin to Digital Pin 12
+
+int LED = 9;
+
+
+
+void setup() {
+
+  pinMode(trigPin, OUTPUT);
+pinMode(echoPin, INPUT);
+
+pinMode(LED, OUTPUT);
+
+  // Init USB serial port for debugging
+  Serial.begin(9600);
+
+}
+
+void loop() 
+
+{long duration, distance;
+digitalWrite(trigPin, LOW);
+delayMicroseconds(2);
+digitalWrite(trigPin, HIGH);
+delayMicroseconds(10);
+
+digitalWrite(trigPin, LOW);
+duration = pulseIn(echoPin, HIGH);
+distance = (duration/2) / 29.1; // this math is so distance sensor reads in cm
+
+Serial.print(distance);
+
+Serial.println(" cm");
+
+if (distance < 10)
+{ 
+digitalWrite(LED, HIGH);
+delay(5000); // this waits 5 seconds before being able to trigger LED again
+
+}
+
+else digitalWrite(LED, LOW);
+
+
+delay(500);
+
+}
