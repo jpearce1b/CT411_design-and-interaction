@@ -1,0 +1,59 @@
+import processing.serial.*;
+import processing.video.*;
+
+Serial myPort;  // Create object from Serial class
+int val = 99;     // Data received from the serial port
+//String PATH = "D:\\nikos\\NIKOS\\VIDEOS\\Inside.Man.2006.1080p.BluRay.x264.anoXmous_.mp4";
+Movie mov;
+String inData = "";
+int THRESHOLD = 100;
+boolean playing = false;
+
+void setup() {
+  size(1280, 720);
+  frameRate(23.98);
+ mov = new Movie(this, "vending.mov");
+  mov.speed(1);
+  mov.volume(30);
+  mov.pause();
+
+  String COM1 = Serial.list()[2]; //change the 0 to a 1 or 2 etc. to match your port
+  myPort = new Serial(this, COM1, 9600);
+  
+}
+
+void movieEvent(Movie m) {
+  m.read();
+}
+
+void draw() {
+  if ( myPort.available() > 0) {  // If data is available,
+         try { 
+            inData = myPort.readStringUntil('\n');
+            if ( inData == null ) {
+               throw new Exception("Error reading: "+inData);
+            }
+            else
+              inData = inData.trim();
+            val = Integer.parseInt(inData);
+            if (val == 1) { //If value from serial is "1"
+              if (!playing) {
+                mov.jump(0);
+                mov.loop();
+                playing = true;
+              }
+            }else{
+              if (playing) {
+                mov.pause();
+                playing = false;
+              }
+            }
+       } catch (Exception ex) {
+         println("Exception:"+ex.toString()+" Data:"+inData);
+       }
+       println(">"+inData+" -> "+val+"<");
+  } 
+  
+
+  image(mov, 0, 0, width, height);
+}
