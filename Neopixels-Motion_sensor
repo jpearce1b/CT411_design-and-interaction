@@ -1,0 +1,66 @@
+#include <Adafruit_NeoPixel.h>
+#define LEDPIN 12 // connect the Data from the strip to this pin on the Arduino
+#define NUMBER_PIXELS 12 // the number of pixels in your LED strip
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMBER_PIXELS, LEDPIN, NEO_GRB + NEO_KHZ800);
+
+
+long duration, distance;
+int i = 0; // first Pixel
+// int lightON = 4000; // 10 sec is the delay time
+int PIR = 2;  
+
+
+void setup()
+{
+// activate serial Monitor
+Serial.begin(9600);
+// init Echo
+  pinMode(PIR, INPUT);
+// init Pixels
+strip.begin();
+strip.show(); // Initialize all pixels to 'off'
+}
+
+void loop()
+{
+// call the function below
+
+
+// check what is to do with the distance value
+if (digitalRead(PIR) == HIGH)
+{
+  Serial.println("Motion detected!");
+// do anything -> call a function
+rainbow();
+}
+else
+{
+// put off the pixels
+strip.clear();
+strip.show();
+Serial.println("Motion stopped!");
+}
+}
+
+
+
+void rainbow() // but we do not cycle the rainbow colors
+{
+// which Pixel and which RGB-Color (last 3 values set 1 color)
+strip.setPixelColor(i , 255, 255, 255); // off
+strip.setPixelColor((i+1) , 255, 255, 255); // violet
+strip.setPixelColor((i+2) , 255, 255, 255); // indigo
+strip.setPixelColor((i+3) , 255, 255, 255); // blue
+strip.setPixelColor((i+4) , 255, 255, 255); // green
+strip.setPixelColor((i+5) , 255, 255, 255); // yellow
+strip.setPixelColor((i+6) , 255, 255, 255); // orange
+strip.setPixelColor((i+7) , 255, 255, 255); 
+strip.setPixelColor((i+8) , 255, 255, 255);
+strip.setPixelColor((i+9) , 255, 255, 255);
+strip.setPixelColor((i+10) , 255, 255, 255);
+strip.setPixelColor((i+11) , 255, 255, 255);
+strip.setPixelColor((i+12) , 255, 255, 255);// red
+strip.show();
+// time how long the Pixels are on before the next distance value will read again
+delay(2000); // remark this out: the light is immediately OFF
+}
