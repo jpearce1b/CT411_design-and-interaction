@@ -1,30 +1,24 @@
-int lightSens = A0;  // variable for photoresistor on analog pin 0
-int lightVal = 0; // variable for value from photoresistor
-int dark = 750 ; // variable for threshold for "dark" ambient light
-int nightLight = 6; // variable for LED on digital pin 6 (PWM capable)
+int sensorPin = A0; // select the analog input pin (A0) for the photoresistor
+int sensorValue; // create variable for value being read by photoresistor
 
+int LED = 6;
+int dark = 750;
 
 void setup() {
-
-  Serial.begin(9600); // initialize serial port, set baud rate to 9600
-  pinMode(nightLight, OUTPUT); // set nightLight pin to Output 5v
-
+  
+Serial.begin(9600); // initialize serial communications at 9600 bps
+pinMode(LED, OUTPUT);
 
 }
 
 void loop() {
-
-  lightVal = analogRead(lightSens); // read value from photoresistor
   
-Serial.println(lightVal);
-//Send photoresistor value to serial monitor
+sensorValue = analogRead(sensorPin); // read the light value from the photoresistor
+Serial.println(sensorValue); // print results of photoresistor values to the Serial Monitor
 
-  
-if (lightVal < dark){
-digitalWrite(nightLight, HIGH);
+if (sensorValue < dark){
+  digitalWrite(LED, HIGH);
 }
 
-else {digitalWrite(nightLight, LOW);
-}
-  
+else digitalWrite(LED, LOW);
 }
