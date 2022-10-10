@@ -1,0 +1,24 @@
+int sensorPin = A0; // select the analog input pin (A0) for the photoresistor
+int sensorValue; // create variable for value being read by photoresistor
+
+int LED = 6;
+int dark = 750;
+
+void setup() {
+  
+Serial.begin(9600); // initialize serial communications at 9600 bps
+pinMode(LED, OUTPUT);
+
+}
+
+void loop() {
+  
+sensorValue = analogRead(sensorPin); // read the light value from the photoresistor
+Serial.println(sensorValue); // print results of photoresistor values to the Serial Monitor
+
+if (sensorValue < dark){
+  digitalWrite(LED, HIGH);
+}
+
+else digitalWrite(LED, LOW);
+}
