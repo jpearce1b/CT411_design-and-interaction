@@ -1,0 +1,22 @@
+int lightBulb = 9;
+int dimmerController = A1;
+int dimmerValue;
+int bulbBrightness;
+
+void setup() {
+  // put your setup code here, to run once:
+Serial.begin(9600);
+pinMode(lightBulb, OUTPUT);
+  
+
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+dimmerValue = analogRead(dimmerController);
+Serial.println(dimmerValue);
+
+bulbBrightness = map(dimmerValue, 0, 1023, 0, 255);
+analogWrite(lightBulb, bulbBrightness);
+
+}
