@@ -1,13 +1,13 @@
-int LED = 6; // create a variable called LED on digital Pin 6
+int LED = 9; // create a variable called LED on digital Pin 9
 
 void setup(){
-  pinMode(LED, OUTPUT); // declare D pin6 to output 5V
+  pinMode(LED, OUTPUT); // declare that D pin9 will output 5V of electricity
 }
   
 void loop()
 {
-  digitalWrite(LED, HIGH); // Send 5V to pin 6 to turn on Light
+  digitalWrite(LED, HIGH); // Send 5V to pin 9 to turn on Light
   delay(200); // wait 200 ms
-  digitalWrite(LED, LOW); // send 0V to pin 6 to turn off Light
+  digitalWrite(LED, LOW); // send 0V to pin 9 to turn off Light
   delay(200); // wait 200 ms
 }
