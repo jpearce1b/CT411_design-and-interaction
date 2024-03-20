@@ -1,7 +1,7 @@
 int lightSens = A0;  // variable for photoresistor on analog pin 0
 int lightVal = 0; // variable for value from photoresistor
-int dark = 750 ; // variable for threshold for "dark" ambient light
-int nightLight = 6; // variable for LED on digital pin 6 (PWM capable)
+int dark = 500 ; // variable for threshold for "dark" ambient light
+int nightLight = 9; // variable for LED on digital pin 9 (PWM capable)
 
 
 void setup() {
