@@ -1,4 +1,4 @@
-int LED = 9; // create a variable called LED on digital Pin 9
+int LED = 6; // create a variable called LED on digital Pin 6
 
 void setup(){
   pinMode(LED, OUTPUT); // declare that D pin9 will output 5V of electricity
