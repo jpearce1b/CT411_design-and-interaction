@@ -2,7 +2,7 @@ int sensorPin = A0; // select the analog input pin (A0) for the photoresistor
 int sensorValue; // create variable for value being read by photoresistor
 
 int LED = 6;
-int dark = 750;
+int dark = 250;
 
 void setup() {
   
