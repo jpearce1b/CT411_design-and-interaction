@@ -1,4 +1,4 @@
-int lightBulb = 6;
+int lightBulb = 9;
 int dimmerController = A1;
 int dimmerValue;
 int bulbBrightness;
