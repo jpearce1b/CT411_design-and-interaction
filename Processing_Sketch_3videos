@@ -1,0 +1,91 @@
+import processing.serial.*;
+import processing.video.*; // Import the video library
+
+Serial myPort;       // The serial port object
+Movie video1, video2, video3; // Video objects
+
+void setup() {
+  // Print the list of available serial ports to the console
+  println("Available serial ports:");
+  String[] portList = Serial.list();
+  
+  // List out each port
+  for (int i = 0; i < portList.length; i++) {
+    println(i + ": " + portList[i]);
+  }
+
+  // Select the correct serial port by its index (update the index after running the sketch once)
+  int portIndex = 1; // Change this to the correct index number once you know it
+  String portName = portList[portIndex];
+  
+  // Set up the serial communication
+  myPort = new Serial(this, portName, 9600);
+
+  // Load video files
+  video1 = new Movie(this, "video1.mp4");
+  video2 = new Movie(this, "video2.mp4");
+  video3 = new Movie(this, "video3.mp4");
+
+  // Set up the window size to 1920x1080
+  size(1920, 1080);
+}
+
+void movieEvent(Movie m) {
+  m.read(); // Ensure frames are being read
+}
+
+void draw() {
+  background(0); // Clear the screen with a black background
+
+  if (myPort.available() > 0) {
+    String inString = myPort.readStringUntil('\n'); // Read the incoming serial data
+    if (inString != null) {
+      inString = inString.trim(); // Remove any trailing newline characters
+
+      // Play different video files based on the input from the Arduino
+      if (inString.equals("1")) {
+        stopAllVideos();
+        playVideo(video1);
+      } else if (inString.equals("2")) {
+        stopAllVideos();
+        playVideo(video2);
+      } else if (inString.equals("3")) {
+        stopAllVideos();
+        playVideo(video3);
+      }
+    }
+  }
+  
+  // Continuously draw the current frame from the video (if it's playing)
+  if (video1.isPlaying()) {
+    image(video1, 0, 0, width, height);
+  } else if (video2.isPlaying()) {
+    image(video2, 0, 0, width, height);
+  } else if (video3.isPlaying()) {
+    image(video3, 0, 0, width, height);
+  }
+}
+
+// Function to play the appropriate video
+void playVideo(Movie video) {
+  video.play();
+}
+
+// Function to stop all videos
+void stopAllVideos() {
+  if (video1.isPlaying()) {
+    video1.stop();
+  }
+  if (video2.isPlaying()) {
+    video2.stop();
+  }
+  if (video3.isPlaying()) {
+    video3.stop();
+  }
+}
+
+void stop() {
+  // Stop the videos when done
+  stopAllVideos();
+  super.stop();
+}
