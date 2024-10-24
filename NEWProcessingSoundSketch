@@ -1,0 +1,76 @@
+import processing.serial.*;
+import processing.sound.*; // Import the sound library
+
+Serial myPort;       // The serial port object
+SoundFile audio1, audio2, audio3; // Audio file objects
+
+void setup() {
+  // Print the list of available serial ports to the console
+  println("Available serial ports:");
+  String[] portList = Serial.list();
+  
+  // List out each port
+  for (int i = 0; i < portList.length; i++) {
+    println(i + ": " + portList[i]);
+  }
+
+  // Select the correct serial port by its index (update the index after running the sketch once)
+  int portIndex = 1; // Change this to the correct index number once you know it
+  String portName = portList[portIndex];
+  
+  // Set up the serial communication
+  myPort = new Serial(this, portName, 9600);
+
+  // Load audio files (make sure to place them in the 'data' folder)
+  audio1 = new SoundFile(this, "audio1.mp3");
+  audio2 = new SoundFile(this, "audio2.mp3");
+  audio3 = new SoundFile(this, "audio3.mp3");
+}
+
+void draw() {
+  // Check for serial input
+  if (myPort.available() > 0) {
+    String inString = myPort.readStringUntil('\n'); // Read the incoming serial data
+    if (inString != null) {
+      inString = inString.trim(); // Remove any trailing newline characters
+
+      // Play different audio files based on the input from the Arduino
+      if (inString.equals("1")) {
+        stopAllAudio();
+        playAudio(audio1);
+      } else if (inString.equals("2")) {
+        stopAllAudio();
+        playAudio(audio2);
+      } else if (inString.equals("3")) {
+        stopAllAudio();
+        playAudio(audio3);
+      }
+    }
+  }
+}
+
+// Function to play the appropriate audio
+void playAudio(SoundFile audio) {
+  if (!audio.isPlaying()) {
+    audio.play();
+  }
+}
+
+// Function to stop all audio
+void stopAllAudio() {
+  if (audio1.isPlaying()) {
+    audio1.stop();
+  }
+  if (audio2.isPlaying()) {
+    audio2.stop();
+  }
+  if (audio3.isPlaying()) {
+    audio3.stop();
+  }
+}
+
+void stop() {
+  // Stop the audio files when done
+  stopAllAudio();
+  super.stop();
+}
