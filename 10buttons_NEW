@@ -1,0 +1,88 @@
+// Pin assignments for buttons
+const int button1Pin = 2;
+const int button2Pin = 3;
+const int button3Pin = 4;
+const int button4Pin = 5;
+const int button5Pin = 6;
+const int button6Pin = 7;
+const int button7Pin = 8;
+const int button8Pin = 9;
+const int button9Pin = 10;
+const int button10Pin = 11;
+
+void setup() {
+  // Initialize the buttons as input with internal pullup resistors
+  pinMode(button1Pin, INPUT_PULLUP);
+  pinMode(button2Pin, INPUT_PULLUP);
+  pinMode(button3Pin, INPUT_PULLUP);
+  pinMode(button4Pin, INPUT_PULLUP);
+  pinMode(button5Pin, INPUT_PULLUP);
+  pinMode(button6Pin, INPUT_PULLUP);
+  pinMode(button7Pin, INPUT_PULLUP);
+  pinMode(button8Pin, INPUT_PULLUP);
+  pinMode(button9Pin, INPUT_PULLUP);
+  pinMode(button10Pin, INPUT_PULLUP);
+
+  // Start the serial communication
+  Serial.begin(9600);
+}
+
+void loop() {
+  // Check if button 1 is pressed (low state since using INPUT_PULLUP)
+  if (digitalRead(button1Pin) == LOW) {
+    Serial.println("1");
+    delay(200);  // Debounce delay
+  }
+
+  // Check if button 2 is pressed
+  if (digitalRead(button2Pin) == LOW) {
+    Serial.println("2");
+    delay(200);  // Debounce delay
+  }
+
+  // Check if button 3 is pressed
+  if (digitalRead(button3Pin) == LOW) {
+    Serial.println("3");
+    delay(200);  // Debounce delay
+  }
+    // Check if button 3 is pressed
+  if (digitalRead(button4Pin) == LOW) {
+    Serial.println("4");
+    delay(200);  // Debounce delay
+  }
+    // Check if button 3 is pressed
+  if (digitalRead(button5Pin) == LOW) {
+    Serial.println("5");
+    delay(200);  // Debounce delay
+  }
+    // Check if button 3 is pressed
+  if (digitalRead(button6Pin) == LOW) {
+    Serial.println("6");
+    delay(200);  // Debounce delay
+  }
+      // Check if button 3 is pressed
+  if (digitalRead(button6Pin) == LOW) {
+    Serial.println("6");
+    delay(200);  // Debounce delay
+  }
+      // Check if button 3 is pressed
+  if (digitalRead(button7Pin) == LOW) {
+    Serial.println("7");
+    delay(200);  // Debounce delay
+  }
+      // Check if button 3 is pressed
+  if (digitalRead(button8Pin) == LOW) {
+    Serial.println("8");
+    delay(200);  // Debounce delay
+  }
+      // Check if button 3 is pressed
+  if (digitalRead(button9Pin) == LOW) {
+    Serial.println("9");
+    delay(200);  // Debounce delay
+  }
+        // Check if button 3 is pressed
+  if (digitalRead(button10Pin) == LOW) {
+    Serial.println("10");
+    delay(200);  // Debounce delay
+  }
+}
