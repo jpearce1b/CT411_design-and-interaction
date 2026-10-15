@@ -1,0 +1,40 @@
+#include <Servo.h>
+
+int ledPin = 7; // LED connected to digital pin 7
+
+Servo myMotor;  // create servo variable called myMotor
+
+int motorController = A1;  // potentiometer connected to A1
+int controllerValue;       // stores potentiometer reading
+
+void setup() {
+pinMode(ledPin, OUTPUT);
+  Serial.begin(9600);  // initialize serial monitor
+
+  myMotor.attach(9);  // attach servo to digital pin 9
+  myMotor.write(0);   // start servo at 0 degrees
+
+}
+
+void loop() {
+
+  // Read potentiometer (0-1023)
+  controllerValue = analogRead(motorController);
+
+  // Convert potentiometer value to servo angle (0-180)
+  int servoAngle = map(controllerValue, 0, 1023, 0, 180);
+
+  // Move servo
+  myMotor.write(servoAngle);
+
+  // Send values to Serial Monitor
+  Serial.print(controllerValue);
+Serial.print(",");
+Serial.println(servoAngle);
+
+  delay(100);  // small delay for readable serial output
+if (servoAngle >= 150 && servoAngle
+<= 180) {
+digitalWrite(ledPin, HIGH); } else {
+digitalWrite(ledPin, LOW); }
+}
