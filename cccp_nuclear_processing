@@ -1,0 +1,746 @@
+import processing.serial.*;
+
+// CCCP REACTOR CONTROL — DELUXE EXPLOSION EDITION
+// Arduino sends: potentiometerValue,servoAngle
+// Serial speed: 9600 baud
+// Red danger at 150 degrees
+// Explosion sequence at 175 degrees
+// Press R to reset after explosion
+
+Serial myPort;
+
+int potValue = 0;
+int servoAngle = 0;
+float displayedAngle = 0;
+
+PFont displayFont;
+
+boolean exploded = false;
+int explosionStartFrame = -1;
+
+// for explosion freeze-frame feel
+int frozenAngle = 0;
+int frozenPot = 0;
+
+final int RED   = 0xFFD52B21;
+final int GOLD  = 0xFFE4BC70;
+final int CREAM = 0xFFF0E1B7;
+final int GREEN = 0xFF9CBF86;
+
+void setup() {
+  size(1200, 800);
+  smooth(8);
+  frameRate(60);
+
+  displayFont = createFont("SansSerif", 24, true);
+  textFont(displayFont);
+
+  println("AVAILABLE SERIAL PORTS:");
+  printArray(Serial.list());
+
+  // CHANGE THIS TO YOUR WORKING PORT INDEX
+  myPort = new Serial(this, Serial.list()[0], 9600);
+  myPort.clear();
+  myPort.bufferUntil('\n');
+}
+
+void draw() {
+  if (!exploded && servoAngle >= 175) {
+    exploded = true;
+    explosionStartFrame = frameCount;
+    frozenAngle = servoAngle;
+    frozenPot = potValue;
+  }
+
+  if (exploded) {
+    drawExplosionSequence();
+    return;
+  }
+
+  boolean warning = servoAngle >= 110 && servoAngle < 150;
+  boolean danger  = servoAngle >= 150;
+  boolean flash   = (frameCount / 12) % 2 == 0;
+
+  displayedAngle = lerp(displayedAngle, servoAngle, 0.16);
+
+  if (danger && flash) {
+    background(65, 12, 13);
+  } else if (warning) {
+    // toned-down amber background
+    float pulse = map(sin(frameCount * 0.10), -1, 1, 0, 1);
+    background(
+      lerp(22, 34, pulse),
+      lerp(24, 28, pulse),
+      lerp(18, 12, pulse)
+    );
+  } else {
+    background(19, 23, 19);
+  }
+
+  drawGrid();
+  drawChassis();
+  drawHeader(danger, warning, flash);
+  drawStar(96, 101, 42, RED);
+  drawBeacon(1085, 105, danger, warning);
+  drawGauge(335, 422, warning, danger);
+  drawReadouts(warning, danger);
+  drawGeiger(danger, warning);
+  drawLamps(warning, danger, flash);
+  drawSlogan(danger, warning, flash);
+
+  // warning overlay now much subtler
+  if (warning) drawWarningEnergyOverlaySubtle();
+
+  drawFilmGrain();
+}
+
+void drawGrid() {
+  stroke(86, 76, 53, 35);
+  strokeWeight(1);
+
+  for (int x = 0; x < width; x += 30) {
+    line(x, 0, x, height);
+  }
+
+  for (int y = 0; y < height; y += 30) {
+    line(0, y, width, y);
+  }
+}
+
+void drawChassis() {
+  stroke(GOLD);
+  strokeWeight(5);
+  fill(37, 39, 30);
+  rect(20, 20, width-40, height-40, 9);
+
+  stroke(95, 88, 66);
+  strokeWeight(2);
+  fill(26, 29, 24);
+  rect(38, 38, width-76, height-76, 5);
+
+  int[] xs = {55, width/2, width-55};
+
+  for (int x : xs) {
+    bolt(x, 55);
+    bolt(x, height-55);
+  }
+}
+
+void bolt(float x, float y) {
+  stroke(80, 68, 47);
+  fill(152, 134, 99);
+  circle(x, y, 12);
+
+  stroke(55, 50, 38);
+  line(x-3, y+3, x+3, y-3);
+}
+
+void drawHeader(boolean danger, boolean warning, boolean flash) {
+  textAlign(CENTER, CENTER);
+  noStroke();
+
+  fill(CREAM);
+  textSize(39);
+  text("ЦЕНТРАЛЬНЫЙ ПУЛЬТ УПРАВЛЕНИЯ", 594, 91);
+
+  fill(GOLD);
+  textSize(17);
+  text("МИНИСТЕРСТВО ЭНЕРГЕТИКИ СССР  •  ОБЪЕКТ № 04", 594, 125);
+
+  stroke(GOLD);
+  strokeWeight(1);
+  fill(55, 43, 32);
+  rect(162, 153, 862, 45, 3);
+
+  if (danger) {
+    fill(flash ? color(255, 73, 45) : GOLD);
+    textSize(22);
+    text("АВАРИЯ! КРИТИЧЕСКАЯ ПЕРЕГРУЗКА!", 593, 175);
+  } else if (warning) {
+    fill(220, 165, 65);
+    textSize(21);
+    text("ВНИМАНИЕ! ПОВЫШЕНИЕ МОЩНОСТИ", 593, 175);
+  } else {
+    fill(GREEN);
+    textSize(22);
+    text("СИСТЕМА РАБОТАЕТ В ШТАТНОМ РЕЖИМЕ", 593, 175);
+  }
+
+  noStroke();
+}
+
+void drawStar(float x, float y, float r, int c) {
+  pushMatrix();
+  translate(x, y);
+
+  stroke(GOLD);
+  strokeWeight(2);
+  fill(65, 31, 25);
+  circle(0, 0, r*2.35);
+
+  fill(c);
+  beginShape();
+  for (int i = 0; i < 10; i++) {
+    float a = -HALF_PI + i*TWO_PI/10;
+    float rad = (i % 2 == 0) ? r : r*0.41;
+    vertex(cos(a)*rad, sin(a)*rad);
+  }
+  endShape(CLOSE);
+
+  fill(GOLD);
+  noStroke();
+  textAlign(CENTER, CENTER);
+  textSize(17);
+  text("☭", 0, 2);
+
+  popMatrix();
+}
+
+void drawBeacon(float x, float y, boolean danger, boolean warning) {
+  pushMatrix();
+  translate(x, y);
+
+  stroke(GOLD);
+  strokeWeight(2);
+  fill(45, 31, 25);
+  circle(0, 0, 116);
+
+  fill(80, 15, 12);
+  circle(0, 0, 89);
+
+  if (danger) {
+    float angle = frameCount * 0.12;
+
+    pushMatrix();
+    rotate(angle);
+    noStroke();
+    fill(255, 65, 35, 170);
+    arc(0, 0, 84, 84, -0.45, 0.45, PIE);
+    rotate(PI);
+    arc(0, 0, 84, 84, -0.45, 0.45, PIE);
+    popMatrix();
+
+    fill(255, 40, 25);
+  } else if (warning) {
+    // much milder than before
+    float angle = frameCount * 0.04;
+
+    pushMatrix();
+    rotate(angle);
+    noStroke();
+    fill(255, 170, 60, 70);
+    arc(0, 0, 84, 84, -0.30, 0.30, PIE);
+    rotate(PI);
+    arc(0, 0, 84, 84, -0.30, 0.30, PIE);
+    popMatrix();
+
+    fill(170, 95, 35);
+  } else {
+    fill(104, 35, 27);
+  }
+
+  noStroke();
+  circle(0, 0, 28);
+
+  fill(CREAM);
+  textAlign(CENTER, CENTER);
+  textSize(11);
+  text("СИРЕНА", 0, 63);
+
+  popMatrix();
+}
+
+float needleRadians(float angle) {
+  return radians(135 + map(angle, 0, 180, 0, 270));
+}
+
+void drawGauge(float cx, float cy, boolean warning, boolean danger) {
+  stroke(GOLD);
+  strokeWeight(5);
+  fill(29, 27, 23);
+  circle(cx, cy, 414);
+
+  stroke(95, 87, 59);
+  strokeWeight(2);
+  fill(42, 38, 30);
+  circle(cx, cy, 377);
+
+  noFill();
+  stroke(70, 76, 62);
+  strokeWeight(20);
+  arc(cx, cy, 320, 320, radians(135), radians(405));
+
+  // toned-down amber zone
+  stroke(210, 145, 55);
+  strokeWeight(12);
+  arc(cx, cy, 320, 320,
+      needleRadians(110),
+      needleRadians(149));
+
+  // strong red critical zone
+  stroke(RED);
+  strokeWeight(20);
+  arc(cx, cy, 320, 320,
+      needleRadians(150),
+      needleRadians(180));
+
+  for (int i = 0; i <= 18; i++) {
+    float a = needleRadians(i*10);
+    boolean major = i % 3 == 0;
+    float inner = major ? 136 : 145;
+
+    stroke(CREAM);
+    strokeWeight(major ? 3 : 1);
+
+    line(cx+cos(a)*inner,
+         cy+sin(a)*inner,
+         cx+cos(a)*156,
+         cy+sin(a)*156);
+
+    if (major) {
+      fill(CREAM);
+      noStroke();
+      textAlign(CENTER, CENTER);
+      textSize(13);
+      text(i*10,
+           cx+cos(a)*117,
+           cy+sin(a)*117);
+    }
+  }
+
+  float a = needleRadians(displayedAngle);
+
+  int needleColor;
+  if (danger) {
+    needleColor = RED;
+  } else if (warning) {
+    needleColor = color(220, 155, 60);
+  } else {
+    needleColor = GREEN;
+  }
+
+  stroke(needleColor);
+  strokeWeight(7);
+  line(cx-cos(a)*31,
+       cy-sin(a)*31,
+       cx+cos(a)*133,
+       cy+sin(a)*133);
+
+  stroke(CREAM);
+  strokeWeight(2);
+  line(cx, cy,
+       cx+cos(a)*132,
+       cy+sin(a)*132);
+
+  noStroke();
+  fill(GOLD);
+  circle(cx, cy, 23);
+
+  fill(70, 20, 19);
+  circle(cx, cy, 9);
+
+  fill(danger ? RED : (warning ? color(220, 155, 60) : GREEN));
+  textAlign(CENTER, CENTER);
+  textSize(48);
+  text(round(servoAngle/180.0*100) + "%", cx, cy+63);
+
+  fill(CREAM);
+  textSize(16);
+  text("МОЩНОСТЬ", cx, cy+93);
+
+  textSize(23);
+  text("РЕАКТОР № 04", cx, 657);
+}
+
+void drawReadouts(boolean warning, boolean danger) {
+  float x = 643;
+  float y = 228;
+  float w = 490;
+  float h = 228;
+
+  stroke(GOLD);
+  strokeWeight(2);
+  fill(48, 42, 31);
+  rect(x, y, w, h, 4);
+
+  fill(CREAM);
+  textAlign(LEFT, CENTER);
+  textSize(25);
+  text("ПОКАЗАНИЯ ПРИБОРОВ", x+20, y+29);
+
+  stroke(110, 96, 67);
+  line(x+18, y+55, x+w-18, y+55);
+
+  String[] labels = {
+    "ПОТЕНЦИОМЕТР",
+    "УГОЛ ПОВОРОТА",
+    "МОЩНОСТЬ"
+  };
+
+  String[] values = {
+    str(potValue),
+    servoAngle+"°",
+    round(servoAngle/180.0*100)+"%"
+  };
+
+  for (int i = 0; i < 3; i++) {
+    int yy = (int)y + 87 + i*48;
+
+    fill(CREAM);
+    noStroke();
+    textAlign(LEFT, CENTER);
+    textSize(20);
+    text(labels[i], x+20, yy);
+
+    textAlign(RIGHT, CENTER);
+
+    if (danger) {
+      fill(RED);
+    } else if (warning) {
+      fill(220, 155, 60);
+    } else {
+      fill(GREEN);
+    }
+
+    textSize(26);
+    text(values[i], x+w-22, yy);
+  }
+}
+
+void drawGeiger(boolean danger, boolean warning) {
+  int x = 643;
+  int y = 472;
+  int w = 490;
+  int h = 125;
+
+  stroke(GOLD);
+  strokeWeight(2);
+  fill(40, 39, 30);
+  rect(x, y, w, h, 4);
+
+  noStroke();
+  fill(CREAM);
+  textAlign(LEFT, CENTER);
+  textSize(20);
+  text("ИНДИКАТОР РАДИАЦИИ", x+19, y+22);
+
+  textSize(12);
+  fill(GOLD);
+  text("УСЛОВНЫЕ ДАННЫЕ", x+w-160, y+22);
+
+  int bars = 24;
+  float base = servoAngle / 180.0;
+
+  for (int i = 0; i < bars; i++) {
+    float wiggle = noise(i*1.7, frameCount*0.07) * 0.42;
+    float level = constrain(base*0.72 + wiggle, 0.05, 1);
+    float bh = level*62;
+    float bx = x+20+i*19;
+
+    if (danger) {
+      fill(i%2==0 ? RED : GOLD);
+    } else if (warning) {
+      fill(205, 145, 55);
+    } else {
+      fill(i>17 ? GOLD : GREEN);
+    }
+
+    rect(bx, y+105-bh, 12, bh);
+  }
+}
+
+void drawLamps(boolean warning, boolean danger, boolean flash) {
+  float[] xs = {715, 823, 931, 1040};
+
+  String[] labels = {
+    "ПИТАНИЕ",
+    "ВНИМАНИЕ",
+    "АВАРИЯ",
+    "ТРЕВОГА"
+  };
+
+  boolean[] lit = {
+    true,
+    warning,
+    danger,
+    danger && flash
+  };
+
+  int[] lampColors = {
+    GREEN, GOLD, RED, RED
+  };
+
+  for (int i = 0; i < 4; i++) {
+    noStroke();
+    fill(CREAM);
+    textSize(14);
+    textAlign(CENTER, CENTER);
+    text(labels[i], xs[i], 618);
+
+    stroke(GOLD);
+    strokeWeight(2);
+    fill(38, 33, 27);
+    circle(xs[i], 659, 49);
+
+    noStroke();
+    fill(lit[i] ? lampColors[i] : color(78, 70, 59));
+    circle(xs[i], 659, lit[i] ? 31 : 22);
+
+    if (lit[i]) {
+      fill(red(lampColors[i]),
+           green(lampColors[i]),
+           blue(lampColors[i]), 42);
+      circle(xs[i], 659, 42);
+    }
+  }
+}
+
+void drawSlogan(boolean danger, boolean warning, boolean flash) {
+  int x = 65;
+  int y = 702;
+  int w = 1070;
+  int h = 61;
+
+  stroke(GOLD);
+  strokeWeight(2);
+
+  if (danger) {
+    fill(145, 18, 13);
+  } else if (warning) {
+    fill(96, 44, 18);
+  } else {
+    fill(90, 22, 19);
+  }
+
+  rect(x, y, w, h);
+
+  clip(x+3, y+3, w-6, h-6);
+  noStroke();
+
+  if (danger) {
+    fill(237, 182, 74, 125);
+    float slide = (frameCount*5)%50;
+    for (int xx = x-100; xx < x+w+100; xx+=50) {
+      quad(xx+slide, y+h,
+           xx+20+slide, y+h,
+           xx+63+slide, y,
+           xx+43+slide, y);
+    }
+  } else if (warning) {
+    // much softer than before
+    fill(220, 160, 70, 55);
+    float slide = (frameCount*2)%60;
+    for (int xx = x-100; xx < x+w+100; xx+=60) {
+      quad(xx+slide, y+h,
+           xx+14+slide, y+h,
+           xx+44+slide, y,
+           xx+30+slide, y);
+    }
+  }
+
+  noClip();
+
+  fill(danger && flash ? color(255, 255, 245) : CREAM);
+  textAlign(CENTER, CENTER);
+  textSize(danger ? 31 : 27);
+
+  if (danger) {
+    text("ОПАСНО! ПЕРЕГРУЗКА! ЗА РОДИНУ!", width/2, y+h/2);
+  } else if (warning) {
+    text("ВНИМАНИЕ! КОНТРОЛИРОВАТЬ МОЩНОСТЬ!", width/2, y+h/2);
+  } else {
+    text("СЛАВА ТРУДУ! СЛАВА ИНЖЕНЕРАМ!", width/2, y+h/2);
+  }
+}
+
+void drawWarningEnergyOverlaySubtle() {
+  noFill();
+  stroke(220, 155, 60, 28);
+  strokeWeight(2);
+
+  for (int i = 0; i < 2; i++) {
+    float pulse = sin(frameCount * 0.10 + i * 1.2);
+    float r = 422 + i * 26 + pulse * 6;
+    ellipse(335, 422, r, r);
+  }
+}
+
+void drawExplosionSequence() {
+  int t = frameCount - explosionStartFrame;
+
+  // screen shake amount
+  float shake = 0;
+  if (t < 22) {
+    shake = map(t, 0, 22, 1.5, 18);
+  } else if (t < 40) {
+    shake = map(t, 22, 40, 18, 3);
+  }
+
+  pushMatrix();
+  translate(random(-shake, shake), random(-shake, shake));
+
+  // Phase 1: signal loss / pre-flash
+  if (t < 10) {
+    background(70, 8, 8);
+
+    drawGrid();
+    drawChassis();
+    drawHeader(true, false, true);
+    drawStar(96, 101, 42, RED);
+    drawBeacon(1085, 105, true, false);
+
+    // frozen dial state just before detonation
+    float oldDisplayed = displayedAngle;
+    displayedAngle = frozenAngle;
+    drawGauge(335, 422, false, true);
+    drawReadouts(false, true);
+    drawGeiger(true, false);
+    drawLamps(false, true, true);
+    drawSlogan(true, false, true);
+    displayedAngle = oldDisplayed;
+
+    fill(255, 240, 220);
+    textAlign(CENTER, CENTER);
+    textSize(34);
+    text("ПОТЕРЯ СИГНАЛА", width/2, 390);
+
+    if ((t / 2) % 2 == 0) {
+      fill(255, 70, 50);
+      textSize(28);
+      text("НЕИЗБЕЖНЫЙ ОТКАЗ СИСТЕМЫ", width/2, 430);
+    }
+
+    drawFilmGrain();
+  }
+
+  // Phase 2: flash + shockwave
+  else if (t < 22) {
+    background(255, 245, 220);
+
+    float core = map(t, 10, 22, 80, 900);
+    float ring = map(t, 10, 22, 120, 1500);
+
+    noStroke();
+    fill(255, 255, 255);
+    ellipse(width/2, height/2, core, core);
+
+    noFill();
+    stroke(255, 235, 180, 220);
+    strokeWeight(18);
+    ellipse(width/2, height/2, ring, ring);
+
+    stroke(255, 250, 220, 140);
+    strokeWeight(8);
+    ellipse(width/2, height/2, ring*0.74, ring*0.74);
+
+    fill(255, 220, 140, 160);
+    noStroke();
+    ellipse(width/2, height/2+35, core*0.65, core*0.95);
+  }
+
+  // Phase 3: mushroom cloud / blast silhouette
+  else if (t < 40) {
+    background(255, 248, 235);
+
+    float burst = map(t, 22, 40, 400, 1700);
+    float stemH  = map(t, 22, 40, 60, 260);
+    float topW   = map(t, 22, 40, 220, 620);
+    float topH   = map(t, 22, 40, 160, 340);
+
+    // expanding white core
+    noStroke();
+    fill(255, 255, 255, 240);
+    ellipse(width/2, height/2+40, burst, burst);
+
+    // shockwave disc
+    noFill();
+    stroke(255, 235, 180, 180);
+    strokeWeight(14);
+    ellipse(width/2, height/2+60, burst*0.95, burst*0.55);
+
+    // mushroom stem
+    noStroke();
+    fill(255, 235, 190, 220);
+    rect(width/2-55, height/2+40, 110, stemH, 30);
+
+    // mushroom top blobs
+    fill(255, 245, 220, 235);
+    ellipse(width/2, height/2-20, topW, topH);
+    ellipse(width/2-120, height/2+10, topW*0.48, topH*0.52);
+    ellipse(width/2+120, height/2+10, topW*0.48, topH*0.52);
+    ellipse(width/2, height/2+40, topW*0.70, topH*0.45);
+
+    // hot glow
+    fill(255, 220, 140, 110);
+    ellipse(width/2, height/2+120, topW*0.85, topH*0.40);
+  }
+
+  // Phase 4: whiteout takeover
+  else if (t < 62) {
+    float alpha = map(t, 40, 62, 120, 255);
+
+    background(255);
+
+    noStroke();
+    fill(255, 255, 255, alpha);
+    rect(0, 0, width, height);
+
+    fill(250, 250, 250, 180);
+    ellipse(width/2, height/2, 1600, 1600);
+
+    if (t < 50) {
+      fill(255, 245, 230, 160);
+      textAlign(CENTER, CENTER);
+      textSize(24);
+      text(" ", width/2, height/2);
+    }
+  }
+
+  // Phase 5: final white screen
+  else {
+    background(255);
+  }
+
+  popMatrix();
+}
+
+void drawFilmGrain() {
+  stroke(240, 226, 192, 17);
+  strokeWeight(1);
+
+  for (int y = 0; y < height; y += 5) {
+    line(0, y, width, y);
+  }
+
+  for (int i = 0; i < 80; i++) {
+    point(random(width), random(height));
+  }
+}
+
+void keyPressed() {
+  if (key == 'r' || key == 'R') {
+    exploded = false;
+    explosionStartFrame = -1;
+  }
+}
+
+void serialEvent(Serial port) {
+  String incoming = port.readStringUntil('\n');
+
+  if (incoming == null) return;
+
+  String[] fields = split(trim(incoming), ',');
+
+  if (fields.length != 2) return;
+
+  try {
+    int p = Integer.parseInt(trim(fields[0]));
+    int a = Integer.parseInt(trim(fields[1]));
+
+    potValue = constrain(p, 0, 1023);
+    servoAngle = constrain(a, 0, 180);
+
+  } catch (NumberFormatException ex) {
+    // ignore bad serial packets
+  }
+}
